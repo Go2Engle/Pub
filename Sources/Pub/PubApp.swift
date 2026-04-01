@@ -32,6 +32,7 @@ struct PubApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        applyAppIconIfAvailable()
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
     }
@@ -41,5 +42,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.windows.first?.makeKeyAndOrderFront(nil)
         }
         return true
+    }
+
+    @MainActor
+    private func applyAppIconIfAvailable() {
+        let candidateURLs = [
+            Bundle.main.resourceURL?.appending(path: "AppIcon.icns"),
+            URL(fileURLWithPath: #filePath)
+                .deletingLastPathComponent()
+                .deletingLastPathComponent()
+                .deletingLastPathComponent()
+                .appending(path: "icons/AppIcon.icns"),
+        ]
+
+        for url in candidateURLs.compactMap({ $0 }) {
+            guard FileManager.default.fileExists(atPath: url.path) else {
+                continue
+            }
+
+            if let image = NSImage(contentsOf: url) {
+                NSApp.applicationIconImage = image
+                break
+            }
+        }
     }
 }
