@@ -1,4 +1,10 @@
+import AppKit
 import SwiftUI
+
+private enum ToolbarItemID {
+    static let refresh = "pub.refresh"
+    static let upgradeAll = "pub.upgradeAll"
+}
 
 struct ContentView: View {
     @ObservedObject var model: AppModel
@@ -44,19 +50,23 @@ struct ContentView: View {
             }
         }
         .toolbar {
-            ToolbarItemGroup(placement: .automatic) {
+            ToolbarItem(id: ToolbarItemID.refresh, placement: .automatic) {
                 Button {
                     model.refreshFromCommand()
                 } label: {
                     Label("Refresh", systemImage: "arrow.clockwise")
                 }
+                .help("Refresh the installed package list and Homebrew status.")
                 .disabled(model.isRefreshing || model.isRunningOperation)
+            }
 
+            ToolbarItem(id: ToolbarItemID.upgradeAll, placement: .automatic) {
                 Button {
                     model.upgradeAllFromCommand()
                 } label: {
                     Label("Upgrade All", systemImage: "arrow.up.circle")
                 }
+                .help("Upgrade every outdated Homebrew package.")
                 .disabled(model.isRefreshing || model.isRunningOperation || model.outdatedPackages.isEmpty)
             }
         }
@@ -230,6 +240,22 @@ private struct WindowConfigurator: NSViewRepresentable {
         guard let window = view.window else { return }
         window.minSize = NSSize(width: 900, height: 620)
         window.styleMask.insert(.resizable)
+        configureToolbarItems(for: window)
+    }
+
+    private func configureToolbarItems(for window: NSWindow) {
+        guard let toolbar = window.toolbar else { return }
+
+        for item in toolbar.items {
+            switch item.itemIdentifier.rawValue {
+            case ToolbarItemID.refresh:
+                item.toolTip = "Refresh the installed package list and Homebrew status."
+            case ToolbarItemID.upgradeAll:
+                item.toolTip = "Upgrade every outdated Homebrew package."
+            default:
+                continue
+            }
+        }
     }
 }
 
@@ -324,24 +350,33 @@ private struct PackageDetailView: View {
     let onClearLog: () -> Void
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header
-                metadata
-                if let caveats = package.caveats, !caveats.isEmpty {
-                    GroupBox {
-                        Text(caveats)
-                            .font(.callout)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    } label: {
-                        Label("Caveats", systemImage: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.yellow)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    header
+                    metadata
+                    if let caveats = package.caveats, !caveats.isEmpty {
+                        GroupBox {
+                            Text(caveats)
+                                .font(.callout)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } label: {
+                            Label("Caveats", systemImage: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.yellow)
+                        }
                     }
                 }
-                logArea
+                .padding(24)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Divider()
+
+            logArea
+                .padding(.horizontal, 24)
+                .padding(.top, 18)
+                .padding(.bottom, 24)
+                .background(Color(nsColor: .windowBackgroundColor).opacity(0.92))
         }
         .background(Color(nsColor: .textBackgroundColor).opacity(0.25))
     }
@@ -488,6 +523,7 @@ private struct PackageDetailView: View {
                     }
                 }
                 .frame(minHeight: 220)
+                .frame(maxHeight: 260)
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
