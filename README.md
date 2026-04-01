@@ -76,6 +76,8 @@ This repository uses Release Please to manage version bumps, changelog updates, 
 
 When releasable commits land on `main`, Release Please opens or updates a release PR. Merging that PR updates the version files, creates the tag, and creates the GitHub release. A separate workflow then builds and uploads the macOS `.dmg`.
 
+Release tags use the format `v<version>`, for example `v0.1.0`.
+
 Release Please defaults to `GITHUB_TOKEN`, but its own docs note that releases created that way do not trigger downstream workflows such as `release.published`. To make the DMG workflow run automatically, set a repository secret named `RELEASE_PLEASE_TOKEN` with a token that can create releases.
 
 ## Project Layout

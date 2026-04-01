@@ -4,6 +4,7 @@
     ".": {
       "release-type": "simple",
       "package-name": "Pub",
+      "include-component-in-tag": false,
       "version-file": "version.txt",
       "changelog-path": "CHANGELOG.md",
       "include-v-in-tag": true,
