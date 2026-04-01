@@ -73,6 +73,7 @@ This repository uses Release Please to manage version bumps, changelog updates, 
 - `feat:` produces a minor release.
 - `fix:` and `deps:` produce a patch release.
 - Breaking changes should use `!` or a `BREAKING CHANGE:` footer.
+- Prefer squash merges so the final commit on `main` keeps a conventional subject.
 
 When releasable commits land on `main`, Release Please opens or updates a release PR. Merging that PR updates the version files, creates the tag, and creates the GitHub release. A separate workflow then builds and uploads the macOS `.dmg`.
 

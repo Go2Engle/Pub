@@ -1,0 +1,79 @@
+name: Conventional Commits
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pull-request-title:
+    if: ${{ github.event_name == 'pull_request_target' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate pull request title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+
+          pattern='^(feat|fix|deps|build|chore|ci|docs|style|refactor|perf|test|revert)(\([^)]+\))?(!)?: .+$'
+
+          if [[ "$PR_TITLE" =~ $pattern ]]; then
+            exit 0
+          fi
+
+          echo "Pull request titles must use Conventional Commits."
+          echo "Examples:"
+          echo "  feat: add package search"
+          echo "  fix(ui): preserve selection after refresh"
+          echo "  chore(ci): update release automation"
+          exit 1
+
+  pushed-commits:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate pushed commit subjects
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          pattern='^(feat|fix|deps|build|chore|ci|docs|style|refactor|perf|test|revert)(\([^)]+\))?(!)?: .+$'
+          range="${BEFORE_SHA}..${HEAD_SHA}"
+          failed=0
+
+          while IFS= read -r subject; do
+            [[ -z "$subject" ]] && continue
+
+            if [[ ! "$subject" =~ $pattern ]]; then
+              echo "Invalid commit subject: $subject"
+              failed=1
+            fi
+          done < <(git log --format='%s' "$range")
+
+          if [[ "$failed" -ne 0 ]]; then
+            echo
+            echo "Commits pushed to main must use Conventional Commits."
+            echo "Examples:"
+            echo "  feat: add package search"
+            echo "  fix(ui): preserve selection after refresh"
+            echo "  chore(ci): update release automation"
+            exit 1
+          fi
