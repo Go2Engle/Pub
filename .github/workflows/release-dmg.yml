@@ -37,4 +37,13 @@ jobs:
       - name: Upload release assets
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${RELEASE_TAG}" dist/* --clobber
+        run: |
+          shopt -s nullglob
+          assets=(dist/*.dmg dist/*.sha256)
+
+          if [[ ${#assets[@]} -eq 0 ]]; then
+            echo "No release assets found in dist/"
+            exit 1
+          fi
+
+          gh release upload "${RELEASE_TAG}" "${assets[@]}" --clobber
