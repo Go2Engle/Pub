@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/Go2Engle/Pub/compare/v0.1.3...v0.1.4) (2026-04-01)
+
+
+### Bug Fixes
+
+* build release dmg with xcode 26 on macos 15 ([#6](https://github.com/Go2Engle/Pub/issues/6)) ([4ef2b4b](https://github.com/Go2Engle/Pub/commit/4ef2b4b80c9229a131599d2894bf91b8573b0757))
+
 ## [0.1.3](https://github.com/Go2Engle/Pub/compare/v0.1.2...v0.1.3) (2026-04-01)
 
 
