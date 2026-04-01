@@ -16,7 +16,8 @@ permissions:
 
 jobs:
   build-dmg:
-    runs-on: macos-14
+    # macos-14 tops out at Xcode 16.x, which keeps the pre-Liquid Glass UI.
+    runs-on: macos-15
     env:
       RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.event.release.tag_name }}
     steps:
@@ -29,7 +30,7 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: '26.3'
 
       - name: Build DMG
         run: ./scripts/build-dmg.sh "${RELEASE_TAG}"
