@@ -12,10 +12,10 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             sidebar
+                .navigationSplitViewColumnWidth(min: 280, ideal: 340)
         } detail: {
             detail
         }
-        .navigationSplitViewColumnWidth(min: 340, ideal: 380)
         .searchable(text: $model.searchText, placement: .sidebar, prompt: searchPlaceholder)
         .background(WindowConfigurator())
         .frame(minWidth: 900, minHeight: 620)
@@ -109,6 +109,7 @@ struct ContentView: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .labelsHidden()
 
                 HStack(spacing: 8) {
                     Image(systemName: model.brewLocation == "brew not found" ? "xmark.circle.fill" : "checkmark.circle.fill")
@@ -280,9 +281,13 @@ private struct StatCard: View {
                 Text(title.uppercased())
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .fixedSize()
                 Text(value)
                     .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundStyle(tint)
+                    .lineLimit(1)
+                    .fixedSize()
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
