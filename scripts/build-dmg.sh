@@ -21,6 +21,7 @@ checksum_path="${dmg_path}.sha256"
 
 rm -rf "${derived_data_path}" "${bundle_dir}" "${staging_dir}" "${dmg_path}" "${checksum_path}"
 mkdir -p "${bundle_dir}/Contents/MacOS" "${staging_dir}"
+mkdir -p "${bundle_dir}/Contents/Resources"
 
 xcodebuild \
   -scheme Pub \
@@ -32,6 +33,7 @@ xcodebuild \
 
 cp "${derived_data_path}/Build/Products/Release/Pub" "${bundle_dir}/Contents/MacOS/Pub"
 chmod 755 "${bundle_dir}/Contents/MacOS/Pub"
+cp "${repo_root}/icons/AppIcon.icns" "${bundle_dir}/Contents/Resources/AppIcon.icns"
 
 cat > "${bundle_dir}/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -46,6 +48,8 @@ cat > "${bundle_dir}/Contents/Info.plist" <<EOF
   <string>io.github.cengle.pub</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
   <key>CFBundleName</key>
   <string>Pub</string>
   <key>CFBundlePackageType</key>
