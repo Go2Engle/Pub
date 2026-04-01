@@ -27,6 +27,7 @@ final class AppModel: ObservableObject {
     private let service: HomebrewService
     private var hasLoaded = false
     private var searchTask: Task<Void, Never>?
+    private var selectionSyncTask: Task<Void, Never>?
 
     init(service: HomebrewService = HomebrewService()) {
         self.service = service
@@ -136,6 +137,11 @@ final class AppModel: ObservableObject {
         activityLog = ""
     }
 
+    deinit {
+        searchTask?.cancel()
+        selectionSyncTask?.cancel()
+    }
+
     private func performGlobalAction(
         _ action: PackageAction,
         packageName: String?,
@@ -188,7 +194,7 @@ final class AppModel: ObservableObject {
         guard !query.isEmpty else {
             searchResults = []
             isSearching = false
-            syncSelection()
+            scheduleSelectionSync()
             return
         }
 
@@ -202,7 +208,7 @@ final class AppModel: ObservableObject {
                 await MainActor.run {
                     self.searchResults = results
                     self.isSearching = false
-                    self.syncSelection()
+                    self.scheduleSelectionSync()
                 }
             } catch is CancellationError {
                 await MainActor.run {
@@ -219,6 +225,20 @@ final class AppModel: ObservableObject {
     }
 
     private func syncSelection() {
+        selectionSyncTask?.cancel()
+
+        selectionSyncTask = Task { @MainActor [weak self] in
+            await Task.yield()
+            guard let self else { return }
+            self.applySelectionSync()
+        }
+    }
+
+    private func scheduleSelectionSync() {
+        syncSelection()
+    }
+
+    private func applySelectionSync() {
         if let selectedPackageID, visiblePackages.contains(where: { $0.id == selectedPackageID }) {
             return
         }
